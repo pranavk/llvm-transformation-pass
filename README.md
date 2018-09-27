@@ -13,6 +13,13 @@ cmake ..
 ```
 
 ## Run
+
+On Linux:
 ```
-opt -load build/hello/LLVMHelloWorld.so -helloworld test/hello.bc -S
+opt -load build/hello/LLVMHelloWorld.so -helloworld test/hello.bc
+```
+
+On OS X:
+```
+opt -load build/hello/LLVMHelloWorld.dylib -helloworld test/hello.bc
 ```
