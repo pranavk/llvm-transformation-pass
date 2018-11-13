@@ -2,6 +2,7 @@
 #include "llvm/Analysis/LazyValueInfo.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/ConstantRange.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/KnownBits.h"
@@ -47,6 +48,8 @@ struct HelloWorld : public FunctionPass {
           Zero <<= 1;
           One <<= 1;
         }
+        errs() << "  ";
+        errs() << LVI->getConstantRange(&I, &BB);
         errs() << "\n";
       }
     }
