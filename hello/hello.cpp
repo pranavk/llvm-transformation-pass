@@ -1,3 +1,4 @@
+#include "llvm/Analysis/DemandedBits.h"
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/Analysis/LazyValueInfo.h"
 #include "llvm/Analysis/ScalarEvolution.h"
@@ -22,11 +23,19 @@ struct HelloWorld : public FunctionPass {
   void getAnalysisUsage(AnalysisUsage &Info) const {
     Info.addRequired<LazyValueInfoWrapperPass>();
     Info.addRequired<ScalarEvolutionWrapperPass>();
+    Info.addRequired<DemandedBitsWrapperPass>();
   }
 
   bool runOnFunction(Function &F) override {
     auto LVI = &getAnalysis<LazyValueInfoWrapperPass>().getLVI();
+    if (!LVI)
+      report_fatal_error("LVI initialization failed");
     auto SE = &getAnalysis<ScalarEvolutionWrapperPass>().getSE();
+    if (!SE)
+      report_fatal_error("SCEV initialization failed");
+    DemandedBits *DB = &getAnalysis<DemandedBitsWrapperPass>().getDemandedBits();
+    if (!DB)
+      report_fatal_error("demanded bits initialization failed");
     Module *M = F.getParent();
     errs() << "function: ";
     errs().write_escaped(F.getName()) << '\n';
@@ -59,6 +68,8 @@ struct HelloWorld : public FunctionPass {
         errs() << "  " << SE->getSignedRange(SC);
         errs() << "  " << SE->getUnsignedRange(SC);
         errs() << "\n";
+        auto Demanded = DB->getDemandedBits(&I);
+        errs() << "    demanded: " << Demanded << "\n";
       }
     }
     return false;
@@ -75,9 +86,10 @@ namespace llvm {
 void initializeHelloWorldPass(llvm::PassRegistry &);
 }
 
-INITIALIZE_PASS_BEGIN(HelloWorld, "print-lazy-value-info",
+INITIALIZE_PASS_BEGIN(HelloWorld, "hello",
                       "Lazy Value Info Printer Pass", false, false)
 INITIALIZE_PASS_DEPENDENCY(LazyValueInfoWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(DemandedBitsWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(ScalarEvolutionWrapperPass)
-INITIALIZE_PASS_END(HelloWorld, "print-lazy-value-info",
+INITIALIZE_PASS_END(HelloWorld, "hello",
                     "Lazy Value Info Printer Pass", false, false)
