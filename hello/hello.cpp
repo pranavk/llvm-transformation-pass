@@ -28,7 +28,22 @@ std::string bitString(APInt V) {
   }
   return s;
 }
-  
+
+std::string bitString(KnownBits Known) {
+  std::string s = "";
+  for (int x = 0; x < Known.getBitWidth(); ++x) {
+    if (Known.Zero.isSignBitSet())
+      s += "0";
+    else if (Known.One.isSignBitSet())
+      s += "1";
+    else
+      s += "?";
+    Known.Zero <<= 1;
+    Known.One <<= 1;
+  }
+  return s;
+}
+
 struct HelloWorld : public FunctionPass {
   static char ID;
   HelloWorld() : FunctionPass(ID) {}
@@ -59,20 +74,7 @@ struct HelloWorld : public FunctionPass {
         errs() << I << "\n";
         errs() << "    ";
         KnownBits Known = computeKnownBits(&I, M->getDataLayout());
-        int W = Known.getBitWidth();
-        std::string s;
-        APInt Zero = Known.Zero;
-        APInt One = Known.One;
-        for (int x = 0; x < W; ++x) {
-          if (Zero.isSignBitSet())
-            errs() << "0";
-          else if (One.isSignBitSet())
-            errs() << "1";
-          else
-            errs() << "?";
-          Zero <<= 1;
-          One <<= 1;
-        }
+        errs() << bitString(Known);
         errs() << "  ";
         errs() << LVI->getConstantRange(&I, &BB);
         errs() << "  ";
