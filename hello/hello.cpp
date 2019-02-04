@@ -16,6 +16,19 @@
 using namespace llvm;
 
 namespace {
+
+std::string bitString(APInt V) {
+  std::string s = "";
+  for (int i = 0; i < V.getBitWidth(); i++) {
+    if (V.isNegative())
+      s += "1";
+    else
+      s += "0";
+    V <<= 1;
+  }
+  return s;
+}
+  
 struct HelloWorld : public FunctionPass {
   static char ID;
   HelloWorld() : FunctionPass(ID) {}
@@ -69,7 +82,7 @@ struct HelloWorld : public FunctionPass {
         errs() << "  " << SE->getUnsignedRange(SC);
         errs() << "\n";
         auto Demanded = DB->getDemandedBits(&I);
-        errs() << "    demanded: " << Demanded << "\n";
+        errs() << "    demanded: " << bitString(Demanded) << "\n";
       }
     }
     return false;
