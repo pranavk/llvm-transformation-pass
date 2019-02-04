@@ -21,8 +21,6 @@ struct RemoveOptnone : public FunctionPass {
   RemoveOptnone() : FunctionPass(ID) {}
 
   bool runOnFunction(Function &F) override {
-    if (F.hasFnAttribute(Attribute::OptimizeNone))
-      llvm::outs() << F.getName() << " has optnone\n";
     F.removeFnAttr(Attribute::OptimizeNone);
     F.removeFnAttr(Attribute::NoInline);
     return true;
@@ -32,7 +30,7 @@ struct RemoveOptnone : public FunctionPass {
 
 char RemoveOptnone::ID = 0;
 static RegisterPass<RemoveOptnone> X("remove-optnone", "Remove optnone Pass",
-                                     false, false);
+                                     true, true);
 
 namespace llvm {
 void initializeRemoveOptnonePass(llvm::PassRegistry &);
