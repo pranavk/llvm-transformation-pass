@@ -74,11 +74,12 @@ struct HelloWorld : public FunctionPass {
         errs() << I << "\n";
         errs() << "    ";
         KnownBits Known = computeKnownBits(&I, M->getDataLayout());
-        errs() << bitString(Known);
-        errs() << "  ";
+        errs() << "known: " << bitString(Known) << "\n";
+        errs() << "    LVI: ";
         errs() << LVI->getConstantRange(&I, &BB);
-        errs() << "  ";
+        errs() << "\n";
         auto SC = SE->getSCEV(&I);
+        errs() << "    SCEV: ";
         SC->print(errs());
         errs() << "  " << SE->getSignedRange(SC);
         errs() << "  " << SE->getUnsignedRange(SC);
