@@ -1,4 +1,9 @@
-# Pass for removing optnone function annotations
+# llvm-transformation-pass
+Template for an out-of-tree LLVM pass.
+
+## Requirements
+ * LLVM 3.8
+ * cmake 3.7
 
 ## Build
 ```
@@ -7,29 +12,14 @@ cd build
 cmake ..
 ```
 
-## Test
+## Run
 
+On Linux:
 ```
-clang -O0 -c -emit-llvm test/hello.c
-llvm-dis test/hello.bc -o -
-```
-
-(Make sure optnone attributes appear in the output)
-
-```
-opt -load build/RemoveOptnone/RemoveOptnone.so -remove-optnone test/hello.bc -o test/hello2.bc
+opt -load build/hello/LLVMHelloWorld.so -helloworld test/hello.bc
 ```
 
-(On OS X use RemoveOptnone.dylib instead of RemoveOptnone.so)
-
+On OS X:
 ```
-llvm-dis test/hello2.bc -o -
+opt -load build/hello/LLVMHelloWorld.dylib -helloworld test/hello.bc
 ```
-
-(Make sure no optnone attributes appear in the output)
-
-```
-opt -O1 test/hello2.bc -S -o -
-```
-
-(Check that main() returns the constant 0)
