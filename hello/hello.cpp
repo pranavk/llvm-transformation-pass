@@ -72,18 +72,26 @@ struct HelloWorld : public FunctionPass {
         if (!I.getType()->isIntegerTy())
           continue;
         errs() << I << "\n";
+
         errs() << "    ";
         KnownBits Known = computeKnownBits(&I, M->getDataLayout());
         errs() << "known: " << bitString(Known) << "\n";
+
+        errs() << "    ";
+        errs() << "isKnownToBePowerOfTwo = " <<
+          isKnownToBeAPowerOfTwo(&I, M->getDataLayout()) << "\n";
+
         errs() << "    LVI: ";
         errs() << LVI->getConstantRange(&I, &BB);
         errs() << "\n";
+
         auto SC = SE->getSCEV(&I);
         errs() << "    SCEV: ";
         SC->print(errs());
         errs() << "  " << SE->getSignedRange(SC);
         errs() << "  " << SE->getUnsignedRange(SC);
         errs() << "\n";
+
         auto Demanded = DB->getDemandedBits(&I);
         errs() << "    demanded: " << bitString(Demanded) << "\n";
       }
