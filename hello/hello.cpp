@@ -16,6 +16,34 @@
 using namespace llvm;
 
 namespace {
+
+std::string bitString(APInt V) {
+  std::string s = "";
+  for (int i = 0; i < V.getBitWidth(); i++) {
+    if (V.isNegative())
+      s += "1";
+    else
+      s += "0";
+    V <<= 1;
+  }
+  return s;
+}
+
+std::string bitString(KnownBits Known) {
+  std::string s = "";
+  for (int x = 0; x < Known.getBitWidth(); ++x) {
+    if (Known.Zero.isSignBitSet())
+      s += "0";
+    else if (Known.One.isSignBitSet())
+      s += "1";
+    else
+      s += "?";
+    Known.Zero <<= 1;
+    Known.One <<= 1;
+  }
+  return s;
+}
+
 struct HelloWorld : public FunctionPass {
   static char ID;
   HelloWorld() : FunctionPass(ID) {}
@@ -44,32 +72,28 @@ struct HelloWorld : public FunctionPass {
         if (!I.getType()->isIntegerTy())
           continue;
         errs() << I << "\n";
+
         errs() << "    ";
         KnownBits Known = computeKnownBits(&I, M->getDataLayout());
-        int W = Known.getBitWidth();
-        std::string s;
-        APInt Zero = Known.Zero;
-        APInt One = Known.One;
-        for (int x = 0; x < W; ++x) {
-          if (Zero.isSignBitSet())
-            errs() << "0";
-          else if (One.isSignBitSet())
-            errs() << "1";
-          else
-            errs() << "?";
-          Zero <<= 1;
-          One <<= 1;
-        }
-        errs() << "  ";
+        errs() << "known: " << bitString(Known) << "\n";
+
+        errs() << "    ";
+        errs() << "isKnownToBePowerOfTwo = " <<
+          isKnownToBeAPowerOfTwo(&I, M->getDataLayout()) << "\n";
+
+        errs() << "    LVI: ";
         errs() << LVI->getConstantRange(&I, &BB);
-        errs() << "  ";
+        errs() << "\n";
+
         auto SC = SE->getSCEV(&I);
+        errs() << "    SCEV: ";
         SC->print(errs());
         errs() << "  " << SE->getSignedRange(SC);
         errs() << "  " << SE->getUnsignedRange(SC);
         errs() << "\n";
+
         auto Demanded = DB->getDemandedBits(&I);
-        errs() << "    demanded: " << Demanded << "\n";
+        errs() << "    demanded: " << bitString(Demanded) << "\n";
       }
     }
     return false;
