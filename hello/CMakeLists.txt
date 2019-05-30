@@ -1,1 +1,1 @@
-add_llvm_loadable_module(LLVMHelloWorld hello.cpp)
+add_llvm_library(LLVMHelloWorld MODULE hello.cpp)
